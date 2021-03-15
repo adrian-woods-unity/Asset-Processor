@@ -1,0 +1,74 @@
+.section {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 10px;
+    margin-bottom: 2px;
+}
+
+.enum_field {
+    margin-left: 5px;
+    margin-right: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.text_field {
+    align-items: center;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.button {
+    margin-left: 5px;
+    margin-right: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.label {
+    -unity-text-align: middle-left;
+}
+
+.image_button {
+    width: 20px;
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    -unity-background-image-tint-color: rgb(162, 162, 162);
+}
+
+.column {
+    flex-grow: 1;
+}
+
+.header {
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(30, 30, 30);
+    border-right-color: rgb(30, 30, 30);
+    border-top-color: rgb(30, 30, 30);
+    border-bottom-color: rgb(30, 30, 30);
+    -unity-text-align: middle-left;
+    white-space: nowrap;
+    padding-left: 5px;
+}
+
+.result {
+    border-left-color: rgb(30, 30, 30);
+    border-right-color: rgb(30, 30, 30);
+    border-top-color: rgb(30, 30, 30);
+    border-bottom-color: rgb(30, 30, 30);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 0;
+    border-bottom-width: 1px;
+}

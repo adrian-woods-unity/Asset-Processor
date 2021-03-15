@@ -1,0 +1,13 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/projectSettingsUpdater.xml
+/modules.xml
+/.idea.AssetProcessor.iml
+# Datasource local storage ignored files
+/../../../../../../../../../../../../../../:\Users\adrian.woods\Documents\GitHub\Utilities\ToolsProject\Assets\Scripts\Editor\AssetProcessor\.idea\.idea.AssetProcessor.dir\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/

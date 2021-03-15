@@ -1,0 +1,18 @@
+{
+  "name": "com.unity.asset-processor",
+  "version": "0.0.1",
+  "displayName": "Asset Processor",
+  "description": "This is a tool for filtering assets by any property and then processing those filtered assets with simple scripted methods",
+  "unity": "2019.4",
+  "unityRelease": "21f1",
+  "dependencies": {
+    "com.unity.modules.uielements": "1.0.0"
+  },
+  "keywords": [
+  ],
+  "author": {
+    "name": "Unity",
+    "email": "adrian.woods@unity3d.com",
+    "url": "https://www.unity3d.com"
+  }
+}

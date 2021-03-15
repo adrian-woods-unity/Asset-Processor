@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement style="height: 25px; flex-direction: row; flex-grow: 0;">
+        <Style src="AssetProcessor.uss" />
+        <ui:Label binding-path="displayName" name="ObjectName" class="label column result" />
+        <ui:VisualElement name="Values" class="column" style="flex-direction: row;" />
+    </ui:VisualElement>
+</ui:UXML>
