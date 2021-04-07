@@ -60,7 +60,7 @@ namespace Editor.AssetProcessor
             _resultsSection = rootVisualElement.Q<Foldout>("ResultsFoldout");
 
             var foreachSelector = rootVisualElement.Q<EnumField>("Region");
-            foreachSelector.RegisterValueChangedCallback(evt => PopulateAssetProcessorData());
+            foreachSelector.RegisterValueChangedCallback(evt => PopulateAssetProcessorData((RegionTypes)evt.newValue));
 
             var filterButton = rootVisualElement.Q<Button>("FilterButton");
             filterButton.clickable.clicked += FilterAssets;
@@ -74,7 +74,7 @@ namespace Editor.AssetProcessor
             var exportResultsButton = rootVisualElement.Q<Button>("ExportCsvButton");
             exportResultsButton.clickable.clicked += ExportResults;
 
-            PopulateAssetProcessorData();
+            PopulateAssetProcessorData(_assetProcessorData.regionType);
         }
 
         private void OpenFilter()
@@ -92,7 +92,7 @@ namespace Editor.AssetProcessor
             var foreachSelector = rootVisualElement.Q<EnumField>("Region");
             foreachSelector.value = _assetProcessorData.regionType;
             
-            PopulateAssetProcessorData(true);
+            PopulateAssetProcessorData(_assetProcessorData.regionType, true);
         }
 
         private void SaveFilter()
@@ -123,7 +123,7 @@ namespace Editor.AssetProcessor
 
         #region Populate UI
 
-        private void PopulateAssetProcessorData(bool forceFilterRefresh = false)
+        private void PopulateAssetProcessorData(RegionTypes regionType, bool forceFilterRefresh = false)
         {
             var assetTypes = new List<Type>();
             var foreachSection = rootVisualElement.Q<VisualElement>("ForEachSection");
@@ -138,8 +138,14 @@ namespace Editor.AssetProcessor
 
             // populate the section depending on where we want to process the data
             // TODO: figure out how to populate this procedurally without including all types
-            if (_assetProcessorData.regionType == RegionTypes.AssetDatabase)
+            if (regionType == RegionTypes.AssetDatabase)
             {
+                var paths = AssetDatabase.GetAllAssetPaths()
+                    .Select(Path.GetExtension)
+                    .Distinct()
+                    .OrderBy(path => path)
+                    .ToList();
+
                 assetTypes.AddRange(new[] {typeof(GameObject), typeof(Material), typeof(Texture2D)});
             }
             else

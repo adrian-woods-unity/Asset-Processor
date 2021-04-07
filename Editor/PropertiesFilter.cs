@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -35,9 +36,7 @@ namespace Editor.AssetProcessor
         private void OnEnable()
         {
             _components.Clear();
-            _components.AddRange(AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .Where(type => type.IsEquivalentTo(typeof(Component)) || type.IsSubclassOf(typeof(Component)))
+            _components.AddRange(TypeCache.GetTypesDerivedFrom<Component>()
                 .OrderBy(type => type.Name)
                 .ToList());
         }
