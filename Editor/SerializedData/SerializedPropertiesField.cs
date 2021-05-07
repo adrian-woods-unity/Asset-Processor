@@ -1,20 +1,23 @@
 ﻿using System;
 
-[Serializable]
-public struct SerializedPropertyField
+namespace AssetProcessor_Editor
 {
-    public string selectedProperty;
-    public string selectedValue;
-    public string fieldType;
-    public string getValue;
-    public int filterIndex;
-
-    public SerializedPropertyField(string value, string type, string property, string get, int index)
+    [Serializable]
+    public struct SerializedPropertyField
     {
-        selectedValue = value;
-        fieldType = type;
-        selectedProperty = property;
-        getValue = get;
-        filterIndex = index;
+        public string selectedProperty;
+        public string selectedValue;
+        public string fieldType;
+        public string getValue;
+        public int filterIndex;
+
+        public SerializedPropertyField(string value, string type, string property, string get, int index)
+        {
+            selectedValue = value;
+            fieldType = type;
+            selectedProperty = property;
+            getValue = get;
+            filterIndex = index;
+        }
     }
 }

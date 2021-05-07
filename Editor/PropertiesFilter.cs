@@ -7,146 +7,149 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PropertyField : ScriptableObject
+namespace AssetProcessor_Editor
 {
-    public readonly List<PropertyInfo> propertyInfos = new List<PropertyInfo>();
-    public PropertyInfo selectedProperty;
-    public string selectedValue;
-    public Type type;
-    public MethodInfo getValue;
-}
-
-public class PropertiesFilter : ScriptableObject
-{
-    public bool hasComponents;
-    private readonly List<Type> _components = new List<Type>();
-    public Type selectedComponentType;
-    public readonly List<PropertyField> propertyFields = new List<PropertyField>();
-    public readonly List<string> operatorTypes = new List<string>();
-    public Type filterType;
-    public string selectedOperator;
-    public string operatorValue = string.Empty;
-    public AndOr andOrField;
-
-    [NonSerialized]
-    public ToolbarPopupSearchField operatorField;
-
-    private void OnEnable()
+    public class PropertyField : ScriptableObject
     {
-        _components.Clear();
-        _components.AddRange(TypeCache.GetTypesDerivedFrom<Component>()
-            .OrderBy(type => type.Name)
-            .ToList());
+        public readonly List<PropertyInfo> propertyInfos = new List<PropertyInfo>();
+        public PropertyInfo selectedProperty;
+        public string selectedValue;
+        public Type type;
+        public MethodInfo getValue;
     }
-    
 
-    public void PopulateComponentSection(VisualElement componentSection, Type assetType)
+    public class PropertiesFilter : ScriptableObject
     {
-        var typeChanged = false;
+        public bool hasComponents;
+        private readonly List<Type> _components = new List<Type>();
+        public Type selectedComponentType;
+        public readonly List<PropertyField> propertyFields = new List<PropertyField>();
+        public readonly List<string> operatorTypes = new List<string>();
+        public Type filterType;
+        public string selectedOperator;
+        public string operatorValue = string.Empty;
+        public AndOr andOrField;
+
+        [NonSerialized]
+        public ToolbarPopupSearchField operatorField;
+
+        private void OnEnable()
+        {
+            _components.Clear();
+            _components.AddRange(TypeCache.GetTypesDerivedFrom<Component>()
+                .OrderBy(type => type.Name)
+                .ToList());
+        }
         
-        if (hasComponents)
+
+        public void PopulateComponentSection(VisualElement componentSection, Type assetType)
         {
-            componentSection.style.width = new StyleLength(StyleKeyword.Auto);
-            componentSection.style.visibility = Visibility.Visible;
-
-            var componentFieldPopup = componentSection.Q<PopupField<Type>>("PropertiesField");
-
-            if (componentFieldPopup == null)
+            var typeChanged = false;
+            
+            if (hasComponents)
             {
-                var selectedIndex = _components.IndexOf(selectedComponentType);
-                selectedIndex = selectedIndex < 0 ? 0 : selectedIndex;
-                
-                componentFieldPopup = new PopupField<Type>(_components, selectedIndex, type => type.Name, type => type.Name)
-                    { name = "PropertiesField" };
+                componentSection.style.width = new StyleLength(StyleKeyword.Auto);
+                componentSection.style.visibility = Visibility.Visible;
 
-                componentFieldPopup.RegisterValueChangedCallback(evt => RefreshPropertyFields(evt.newValue, componentSection));
-                componentFieldPopup.style.height = 18;
+                var componentFieldPopup = componentSection.Q<PopupField<Type>>("PropertiesField");
 
-                componentSection.Insert(0, componentFieldPopup);
+                if (componentFieldPopup == null)
+                {
+                    var selectedIndex = _components.IndexOf(selectedComponentType);
+                    selectedIndex = selectedIndex < 0 ? 0 : selectedIndex;
+                    
+                    componentFieldPopup = new PopupField<Type>(_components, selectedIndex, type => type.Name, type => type.Name)
+                        { name = "PropertiesField" };
+
+                    componentFieldPopup.RegisterValueChangedCallback(evt => RefreshPropertyFields(evt.newValue, componentSection));
+                    componentFieldPopup.style.height = 18;
+
+                    componentSection.Insert(0, componentFieldPopup);
+                }
+
+                if (filterType != componentFieldPopup.value)
+                {
+                    filterType = componentFieldPopup.value;
+                    typeChanged = true;
+                }
+            }
+            else
+            {
+                componentSection.style.width = 0;
+                componentSection.style.visibility = Visibility.Hidden;
+
+                if (filterType != assetType)
+                {
+                    filterType = assetType;
+                    typeChanged = true;
+                }
             }
 
-            if (filterType != componentFieldPopup.value)
+            // only set the type if the current type has changed
+            if (typeChanged)
             {
-                filterType = componentFieldPopup.value;
-                typeChanged = true;
-            }
-        }
-        else
-        {
-            componentSection.style.width = 0;
-            componentSection.style.visibility = Visibility.Hidden;
-
-            if (filterType != assetType)
-            {
-                filterType = assetType;
-                typeChanged = true;
+                SetPropertyType(0, filterType);
             }
         }
 
-        // only set the type if the current type has changed
-        if (typeChanged)
+        private void RefreshPropertyFields(Type type, VisualElement componentSection)
         {
-            SetPropertyType(0, filterType);
-        }
-    }
+            SetPropertyType(0, type);
+            selectedComponentType = type;
+            filterType = type;
 
-    private void RefreshPropertyFields(Type type, VisualElement componentSection)
-    {
-        SetPropertyType(0, type);
-        selectedComponentType = type;
-        filterType = type;
-
-        var parent = componentSection.parent;
-        var fieldUI = parent.Q<VisualElement>("PropertyFields");
-        propertyFields.FirstOrDefault()?.selectedProperty.GeneratePropertyFieldsRecursive(0, this, fieldUI);
-    }
-
-    public void SetPropertyType(int index, Type type)
-    {
-        // clear out the propertyList at and after the currently selected object
-        while (index < propertyFields.Count)
-        {
-            propertyFields.RemoveAt(index);
+            var parent = componentSection.parent;
+            var fieldUI = parent.Q<VisualElement>("PropertyFields");
+            propertyFields.FirstOrDefault()?.selectedProperty.GeneratePropertyFieldsRecursive(0, this, fieldUI);
         }
 
-        // exclude currently selected types from the list of possible additional types
-        var currentTypes = propertyFields.Select(list => list.selectedProperty).ToList();
-
-        var objProperties = type.GetProperties().ToList().Except(currentTypes).ToList();
-        var newPropertyField = CreateInstance<PropertyField>();
-
-        newPropertyField.type = type;
-        newPropertyField.propertyInfos.AddRange(objProperties);
-        
-        newPropertyField.selectedProperty = newPropertyField.propertyInfos.FirstOrDefault();
-        newPropertyField.getValue = newPropertyField.selectedProperty?.GetGetMethod();
-
-        propertyFields.Add(newPropertyField);
-    }
-
-    public void SetOperatorType(Type type)
-    {
-        operatorTypes.Clear();
-        operatorTypes.AddRange(new[] { "==", "!=" });
-
-        if (type.IsEnum || type.IsAssignableFrom(typeof(string)))
+        public void SetPropertyType(int index, Type type)
         {
-            operatorTypes.AddRange(new[] { "contains", "not contains" });
-        }
-        else if (type.IsNumeric() || type.IsCustomArrayType())
-        {
-            operatorTypes.AddRange(new[] { ">", ">=", "<", "<=" });
+            // clear out the propertyList at and after the currently selected object
+            while (index < propertyFields.Count)
+            {
+                propertyFields.RemoveAt(index);
+            }
+
+            // exclude currently selected types from the list of possible additional types
+            var currentTypes = propertyFields.Select(list => list.selectedProperty).ToList();
+
+            var objProperties = type.GetProperties().ToList().Except(currentTypes).ToList();
+            var newPropertyField = CreateInstance<PropertyField>();
+
+            newPropertyField.type = type;
+            newPropertyField.propertyInfos.AddRange(objProperties);
+            
+            newPropertyField.selectedProperty = newPropertyField.propertyInfos.FirstOrDefault();
+            newPropertyField.getValue = newPropertyField.selectedProperty?.GetGetMethod();
+
+            propertyFields.Add(newPropertyField);
         }
 
-        // only change the operator if it is not in the newly generated list of operators
-        if (!operatorTypes.Contains(selectedOperator))
+        public void SetOperatorType(Type type)
         {
-            selectedOperator = operatorTypes.FirstOrDefault();
-        }
-    }
+            operatorTypes.Clear();
+            operatorTypes.AddRange(new[] { "==", "!=" });
 
-    public void SetFilterType(Type type)
-    {
-        filterType = type;
-    }
+            if (type.IsEnum || type.IsAssignableFrom(typeof(string)))
+            {
+                operatorTypes.AddRange(new[] { "contains", "not contains" });
+            }
+            else if (type.IsNumeric() || type.IsCustomArrayType())
+            {
+                operatorTypes.AddRange(new[] { ">", ">=", "<", "<=" });
+            }
+
+            // only change the operator if it is not in the newly generated list of operators
+            if (!operatorTypes.Contains(selectedOperator))
+            {
+                selectedOperator = operatorTypes.FirstOrDefault();
+            }
+        }
+
+        public void SetFilterType(Type type)
+        {
+            filterType = type;
+        }
+    }   
 }
