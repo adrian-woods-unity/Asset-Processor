@@ -1,12 +1,13 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <uie:Toolbar name="PropertiesFilter" style="flex-direction: row; margin-left: 2px; margin-right: 2px; margin-top: 2px; margin-bottom: 2px;">
         <Style src="AssetProcessor.uss" />
-        <ui:VisualElement name="ComponentField" style="height: 30px; flex-direction: row;" />
+        <uie:ToolbarPopupSearchField focusable="True" name="ComponentField" style="flex-grow: 0; flex-shrink: 1; width: auto; height: auto;" />
         <ui:VisualElement name="PropertyFields" style="height: 30px; flex-direction: row;" />
         <ui:VisualElement name="OperatorFields" style="height: 30px;" />
         <uie:ToolbarPopupSearchField focusable="True" name="PropertiesOperatorValue" style="width: auto; flex-grow: 1;" />
         <uie:EnumField name="AndOrField" binding-path="andOrField" value="And" />
-        <uie:ToolbarButton text="-" name="RemoveFilterButton" />
-        <uie:ToolbarButton text="+" name="AddFilterButton" style="width: auto;" />
+        <uie:ToolbarButton text="-" name="RemoveFilterButton" tooltip="Remove this filter" />
+        <uie:ToolbarButton text="+" name="AddFilterButton" tooltip="Add new filter" style="width: auto;" />
+        <uie:ToolbarButton text="Copy" name="CopyFilterButton" tooltip="Duplicate current filter" style="width: auto; -unity-text-align: middle-left;" />
     </uie:Toolbar>
 </ui:UXML>

@@ -232,6 +232,18 @@ namespace AssetProcessor_Editor
                 _filtersView.Refresh();
             }
         }
+        
+        private void CopyFilter(EventBase obj)
+        {
+            var index = GetFilterIndexFromUi(obj.originalMousePosition);
+            var currentFilter = _assetProcessorData.propertyFilters[index];
+
+            var newFilter = currentFilter.CopyFilter();
+
+            _assetProcessorData.propertyFilters.Insert(index + 1, newFilter);
+            
+            RefreshFilters();
+        }
 
         private int GetFilterIndexFromUi(Vector2 mousePosition)
         {
@@ -266,6 +278,9 @@ namespace AssetProcessor_Editor
             var removeFilterButton = item.Q<Button>("RemoveFilterButton");
             removeFilterButton.clickable.clickedWithEventInfo += RemoveFilter;
 
+            var copyFilterButton = item.Q<Button>("CopyFilterButton");
+            copyFilterButton.clickable.clickedWithEventInfo += CopyFilter;
+
             return item;
         }
 
@@ -276,8 +291,8 @@ namespace AssetProcessor_Editor
             element.Bind(new SerializedObject(propertyFilter));
         
             // visualize the component section
-            var componentSection = element.Q<VisualElement>("ComponentField");
-            propertyFilter.PopulateComponentSection(componentSection, _assetProcessorData.assetType);
+            var componentSelector = element.Q<ToolbarPopupSearchField>("ComponentField");
+            propertyFilter.PopulateComponentSection(componentSelector, _assetProcessorData.assetType);
 
             // populate operator information into the filter
             propertyFilter.operatorField = element.Q<ToolbarPopupSearchField>("PropertiesOperatorValue");

@@ -42,41 +42,36 @@ namespace AssetProcessor_Editor
         }
         
 
-        public void PopulateComponentSection(VisualElement componentSection, Type assetType)
+        public void PopulateComponentSection(ToolbarPopupSearchField componentSelector, Type assetType)
         {
             var typeChanged = false;
             
             if (hasComponents)
             {
-                componentSection.style.width = new StyleLength(StyleKeyword.Auto);
-                componentSection.style.visibility = Visibility.Visible;
+                componentSelector.style.width = new StyleLength(StyleKeyword.Auto);
+                componentSelector.style.visibility = Visibility.Visible;
 
-                var componentFieldPopup = componentSection.Q<PopupField<Type>>("PropertiesField");
+                var selectedType = GetTypeFromFullName(selectedComponentType != null
+                    ? selectedComponentType.FullName
+                    : _components.First().FullName);
+                
+                componentSelector.value = selectedType.FullName;
+                
+                PopulateComponentSuggestions(componentSelector);
+                
+                componentSelector.RegisterValueChangedCallback(evt =>
+                    RefreshPropertyFields(evt.newValue, componentSelector));
 
-                if (componentFieldPopup == null)
+                if (filterType != selectedType)
                 {
-                    var selectedIndex = _components.IndexOf(selectedComponentType);
-                    selectedIndex = selectedIndex < 0 ? 0 : selectedIndex;
-                    
-                    componentFieldPopup = new PopupField<Type>(_components, selectedIndex, type => type.Name, type => type.Name)
-                        { name = "PropertiesField" };
-
-                    componentFieldPopup.RegisterValueChangedCallback(evt => RefreshPropertyFields(evt.newValue, componentSection));
-                    componentFieldPopup.style.height = 18;
-
-                    componentSection.Insert(0, componentFieldPopup);
-                }
-
-                if (filterType != componentFieldPopup.value)
-                {
-                    filterType = componentFieldPopup.value;
+                    filterType = selectedType;
                     typeChanged = true;
                 }
             }
             else
             {
-                componentSection.style.width = 0;
-                componentSection.style.visibility = Visibility.Hidden;
+                componentSelector.style.width = 0;
+                componentSelector.style.visibility = Visibility.Hidden;
 
                 if (filterType != assetType)
                 {
@@ -91,16 +86,58 @@ namespace AssetProcessor_Editor
                 SetPropertyType(0, filterType);
             }
         }
-
-        private void RefreshPropertyFields(Type type, VisualElement componentSection)
+        
+        private void PopulateComponentSuggestions(ToolbarPopupSearchField componentField)
         {
+            var items = componentField.menu.MenuItems();
+            items.Clear();
+
+            var suggestions = GetTypesFromFullName(componentField.value);
+
+            items.AddRange(suggestions.Select(t => MenuActionFactory(t.FullName, componentField)));
+        }
+
+        private DropdownMenuAction MenuActionFactory(string typeName, ToolbarPopupSearchField componentField)
+        {
+            return new DropdownMenuAction(typeName, action =>
+                {
+                    var type = GetTypeFromFullName(typeName);
+
+                    if (type != null)
+                    {
+                        componentField.SetValueWithoutNotify(typeName);
+                        RefreshPropertyFields(typeName, componentField);
+                    }
+                },
+                action => DropdownMenuAction.Status.Normal, null);
+        }
+
+        private void RefreshPropertyFields(string typeName, ToolbarPopupSearchField componentSelector)
+        {
+            PopulateComponentSuggestions(componentSelector);
+            
+            var type = GetTypeFromFullName(typeName);
+            if (type == null) return;
+            
             SetPropertyType(0, type);
             selectedComponentType = type;
             filterType = type;
 
-            var parent = componentSection.parent;
+            var parent = componentSelector.parent;
             var fieldUI = parent.Q<VisualElement>("PropertyFields");
             propertyFields.FirstOrDefault()?.selectedProperty.GeneratePropertyFieldsRecursive(0, this, fieldUI);
+        }
+
+        private Type GetTypeFromFullName(string fullName)
+        {
+            return _components.FirstOrDefault(comp =>
+                comp.AssemblyQualifiedName != null && comp.AssemblyQualifiedName.IndexOf(fullName, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private IEnumerable<Type> GetTypesFromFullName(string fullName)
+        {
+            return _components.Where(comp =>
+                comp.AssemblyQualifiedName != null && comp.AssemblyQualifiedName.IndexOf(fullName, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         public void SetPropertyType(int index, Type type)

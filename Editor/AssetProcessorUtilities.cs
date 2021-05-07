@@ -58,7 +58,6 @@ namespace AssetProcessor_Editor
             fields[index].selectedProperty = info;
 
             // generate the popup field
-            // TODO: create an interface that can be implemented than handles custom filtering types (like Vector)
             var popupField = GetPropertyUI(fields, index, info, filter, fieldUI);
 
             // remove all of the UI children after this, they will be regenerated automatically

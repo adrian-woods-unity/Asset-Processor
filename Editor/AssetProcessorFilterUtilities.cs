@@ -187,5 +187,28 @@ namespace AssetProcessor_Editor
 
             return result;
         }
+
+        public static PropertiesFilter CopyFilter(this PropertiesFilter inputFilter)
+        {
+            var result = Object.Instantiate(inputFilter);
+            result.SetFilterType(inputFilter.filterType);
+            result.selectedComponentType = inputFilter.selectedComponentType;
+            
+            result.propertyFields.Clear();
+            foreach (var field in inputFilter.propertyFields)
+            {
+                var newField = Object.Instantiate(field);
+
+                newField.selectedProperty = field.selectedProperty;
+                newField.type = field.type;
+                newField.getValue = field.getValue;
+                newField.propertyInfos.Clear();
+                newField.propertyInfos.AddRange(field.propertyInfos);
+
+                result.propertyFields.Add(newField);
+            }
+
+            return result;
+        }
     }
 }
