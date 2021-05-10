@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,38 +9,60 @@ namespace AssetProcessor_Editor
 {
     public static class AssetProcessorFilterUtilities
     {
-        public static bool ProcessFilters(this List<PropertiesFilter> filters, Object obj,
+        public static void ProcessFilters(this List<PropertiesFilter> filters, Object obj,
             List<AssetProcessorResult> results)
         {
-            // create the result so we can inject the result value into it
-            var assetResult = CreateResult(obj);
-        
             var firstFilter = filters.First();
-            var result = firstFilter.FilterObject(obj, assetResult);
 
-            for (var i = 1; i < filters.Count; i++)
+            var objects = firstFilter.GetGameObjectsFromFilter(obj).ToList();
+
+            for (var o = 0; o < objects.Count; o++)
             {
-                var filter = filters[i];
-                var nextResult = filter.FilterObject(obj, assetResult);
+                var child = objects[o];
+                
+                EditorUtility.DisplayProgressBar($"Parsing object {o} / " +
+                                                 $"{objects.Count}", child.name, o / (float)objects.Count);
+
+                // create the result so we can inject the result value into it
+                var assetResult = CreateResult(child);
+                
+                var result = firstFilter.FilterObject(child, assetResult);
+
+                for (var i = 1; i < filters.Count; i++)
+                {
+                    var filter = filters[i];
+                    var nextResult = filter.FilterObject(child, assetResult);
             
-                // compare against previous result
-                if (filters[i - 1].andOrField == AndOr.And)
-                {
-                    result &= nextResult;
+                    // compare against previous result
+                    if (filters[i - 1].andOrField == AndOr.And)
+                    {
+                        result &= nextResult;
+                    }
+                    else
+                    {
+                        result |= nextResult;
+                    }
                 }
-                else
+
+                // add to our results if we should
+                if (result)
                 {
-                    result |= nextResult;
-                }
+                    results.Add(assetResult);
+                }   
+            }
+        }
+
+        private static IEnumerable<GameObject> GetGameObjectsFromFilter(this PropertiesFilter filter, Object obj)
+        {
+            var result = new List<GameObject>();
+
+            if (obj is GameObject go)
+            {
+                result.AddRange(go.GetComponentsInChildren(filter.filterType, true)
+                    .Select(comp => comp.gameObject));
             }
 
-            // add to our results if we should
-            if (result)
-            {
-                results.Add(assetResult);
-            }
-        
-            return result;
+            return result.Distinct();
         }
 
         private static bool FilterObject(this PropertiesFilter filter, Object obj, AssetProcessorResult assetResult)
