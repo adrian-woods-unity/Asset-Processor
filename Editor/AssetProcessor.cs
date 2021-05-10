@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -58,8 +59,8 @@ namespace AssetProcessor_Editor
 
             _resultsSection = rootVisualElement.Q<Foldout>("ResultsFoldout");
 
-            var foreachSelector = rootVisualElement.Q<EnumField>("Region");
-            foreachSelector.RegisterValueChangedCallback(evt => PopulateAssetProcessorData((RegionTypes)evt.newValue));
+            var regionSelector = rootVisualElement.Q<EnumField>("Region");
+            regionSelector.RegisterValueChangedCallback(evt => PopulateAssetProcessorData((RegionTypes)evt.newValue));
 
             var filterButton = rootVisualElement.Q<Button>("FilterButton");
             filterButton.clickable.clicked += FilterAssets;
@@ -124,6 +125,7 @@ namespace AssetProcessor_Editor
 
         private void PopulateAssetProcessorData(RegionTypes regionType, bool forceFilterRefresh = false)
         {
+            _assetProcessorData.regionType = regionType;
             var assetTypes = new List<Type>();
             var foreachSection = rootVisualElement.Q<VisualElement>("ForEachSection");
             var assetPopup = foreachSection.Q<PopupField<Type>>("ForeachSelector");
@@ -506,12 +508,29 @@ namespace AssetProcessor_Editor
             if (!string.IsNullOrWhiteSpace(path))
             {
                 var writer = File.CreateText(path);
-            
-                writer.WriteLine();
 
-                foreach (var result in _assetProcessorData.results)    
+                var headerBuilder = new StringBuilder();
+                headerBuilder.Append("Object Name,");
+                for (var i = 0; i < _assetProcessorData.propertyFilters.Count(); i++)
                 {
-                
+                    var value = _assetProcessorData.propertyFilters[i].propertyFields.LastOrDefault()
+                        ?.selectedValue;
+                    headerBuilder.Append($"{value},");
+                }
+
+                headerBuilder.Remove(headerBuilder.Length - 1, 1);
+                writer.WriteLine(headerBuilder.ToString());
+
+                foreach (var result in _assetProcessorData.results)
+                {
+                    var valuesBuilder = new StringBuilder();
+
+                    foreach (var value in result.values)
+                    {
+                        valuesBuilder.Append($",{value}");
+                    }
+                    
+                    writer.WriteLine($"{result.displayName}{valuesBuilder}");
                 }
             
                 writer.Close();
