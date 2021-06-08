@@ -14,7 +14,7 @@ namespace AssetProcessor_Editor
 {
     public class AssetProcessor : EditorWindow
     {
-        private const string BasePath = "Packages/com.unity.asset-processor/Editor/";
+        private const string BasePath = "Packages/com.unity.asset-processor/Editor/UI/";
 
         private StyleSheet _styleSheet;
 
@@ -91,7 +91,7 @@ namespace AssetProcessor_Editor
 
             var foreachSelector = rootVisualElement.Q<EnumField>("Region");
             foreachSelector.value = _assetProcessorData.regionType;
-        
+
             PopulateAssetProcessorData(_assetProcessorData.regionType, true);
         }
 
@@ -138,16 +138,28 @@ namespace AssetProcessor_Editor
             }
 
             // populate the section depending on where we want to process the data
-            // TODO: figure out how to populate this procedurally without including all types
             if (regionType == RegionTypes.AssetDatabase)
-            {
-                var paths = AssetDatabase.GetAllAssetPaths()
-                    .Select(Path.GetExtension)
-                    .Distinct()
-                    .OrderBy(path => path)
-                    .ToList();
+            { 
+                // for now we're just going to look at the Assets folder
+                // TODO: make this configurable?
+                var pathLookup = new Dictionary<string, Type>();
+                var allPaths = AssetDatabase.GetAllAssetPaths()
+                    .Where(path => path.StartsWith("Assets"))
+                    .Distinct();
 
-                assetTypes.AddRange(new[] {typeof(GameObject), typeof(Material), typeof(Texture2D)});
+                foreach (var path in allPaths)
+                {
+                    var extension = Path.GetExtension(path);
+
+                    if (!string.IsNullOrWhiteSpace(extension) && !pathLookup.ContainsKey(extension))
+                    {
+                        var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+
+                        pathLookup.Add(extension, asset.GetType());
+                    }
+                }
+
+                assetTypes.AddRange(pathLookup.Values);
             }
             else
             {
@@ -288,6 +300,12 @@ namespace AssetProcessor_Editor
 
         private void BindFilterItem(VisualElement element, int i)
         {
+            // if the element index is larger than the filter count, ignore
+            if (i >= _assetProcessorData.propertyFilters.Count)
+            {
+                return;
+            }
+
             var propertyFilter = _assetProcessorData.propertyFilters[i];
         
             element.Bind(new SerializedObject(propertyFilter));
@@ -420,7 +438,7 @@ namespace AssetProcessor_Editor
             _resultsView.contentContainer.style.flexGrow = 1;
             _resultsView.style.height = _assetProcessorData.results.Count * _resultsView.itemHeight;
             _resultsView.Refresh();
-        
+
             RefreshResultHeaders();
         }
 
@@ -431,7 +449,7 @@ namespace AssetProcessor_Editor
 
             var headerObject = rootVisualElement.Q<Label>("ResultsHeaderObject");
             headerObject.style.width = width;
-        
+
             var headerResults = rootVisualElement.Q<VisualElement>("ResultsHeaderValues");
             headerResults.Clear();
         
@@ -444,8 +462,9 @@ namespace AssetProcessor_Editor
                 label.AddToClassList("header");
         
                 headerResults.Add(label);
-                headerResults.style.flexGrow = 1;
             }
+
+            headerResults.style.flexGrow = 1;
         }
 
         private static Length GetPercentageWidth(int divisor)
