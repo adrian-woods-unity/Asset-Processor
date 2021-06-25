@@ -19,7 +19,8 @@
         <ui:Foldout text="Results" value="false" name="ResultsFoldout" style="flex-grow: 1;">
             <ui:VisualElement name="ResultsHeader" style="flex-direction: row; min-height: 25px;">
                 <ui:Label text="Object Name" name="ResultsHeaderObject" class="column header" style="height: 25px;" />
-                <ui:VisualElement name="ResultsHeaderValues" style="flex-direction: row; width: 0; height: 25px;" />
+                <ui:VisualElement name="ResultsHeaderValues" style="flex-direction: row; width: 0; height: 25px; flex-shrink: 0;" />
+                <ui:VisualElement style="flex-direction: row; width: 13px;" />
             </ui:VisualElement>
             <ui:ListView focusable="True" name="ResultsView" item-height="25" style="flex-grow: 1;" />
             <ui:VisualElement name="ExportCsvButton" style="flex-direction: row; justify-content: flex-end; min-height: 35px;">
@@ -27,7 +28,12 @@
             </ui:VisualElement>
         </ui:Foldout>
     </ui:VisualElement>
-    <ui:VisualElement name="DoSection" class="section">
-        <ui:Foldout text="Process" value="false" />
+    <ui:VisualElement name="ProcessorSection" class="section">
+        <ui:Foldout text="Process" value="false">
+            <ui:ListView focusable="True" name="ProcessorList" />
+        </ui:Foldout>
+        <ui:VisualElement style="flex-direction: row; flex-grow: 1; justify-content: flex-end;">
+            <ui:Button text="Process" tooltip="Process selected results with selected processors" name="ProcessButton" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

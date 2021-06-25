@@ -7,7 +7,7 @@ namespace AssetProcessor_Editor
         /// <summary>
         /// The lowest level type that this processor can run on
         /// </summary>
-        Type Type { get; }
+        Type ProcessorType { get; }
 
         /// <summary>
         /// The display name of the processor
@@ -22,6 +22,6 @@ namespace AssetProcessor_Editor
         /// <summary>
         /// When the processor runs, this is the method that is run on that type
         /// </summary>
-        void OnProcess();
+        void OnProcess(object obj);
     }
 }

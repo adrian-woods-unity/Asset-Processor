@@ -23,7 +23,10 @@ namespace AssetProcessor_Editor
 
         private ListView _filtersView;
         private ListView _resultsView;
+        private ListView _processorView;
         private Foldout _resultsSection;
+
+        private readonly List<IAssetProcessor> _selectedProcessors = new List<IAssetProcessor>();
 
         [MenuItem("Tools/AssetProcessor")]
         public static void OpenAssetProcessor()
@@ -56,6 +59,13 @@ namespace AssetProcessor_Editor
             _resultsView = rootVisualElement.Q<ListView>("ResultsView");
             _resultsView.selectionType = SelectionType.Multiple;
             _resultsView.onSelectionChanged += OnResultSelected;
+
+            _processorView = rootVisualElement.Q<ListView>("ProcessorList");
+            _processorView.selectionType = SelectionType.Multiple;
+            _processorView.onSelectionChanged += ProcessorsSelectionChanged;
+
+            var processButton = rootVisualElement.Q<Button>("ProcessButton");
+            processButton.clickable.clicked += ProcessResults;
 
             _resultsSection = rootVisualElement.Q<Foldout>("ResultsFoldout");
 
@@ -440,12 +450,13 @@ namespace AssetProcessor_Editor
             _resultsView.Refresh();
 
             RefreshResultHeaders();
+            RefreshProcessors();
         }
 
         private void RefreshResultHeaders()
         {
             var divisor = _assetProcessorData.propertyFilters.Count;
-            var width = GetPercentageWidth(divisor);
+            var width = GetColumnWidth(divisor);
 
             var headerObject = rootVisualElement.Q<Label>("ResultsHeaderObject");
             headerObject.style.width = width;
@@ -460,20 +471,27 @@ namespace AssetProcessor_Editor
                 label.style.width = width;
                 label.styleSheets.Add(_styleSheet);
                 label.AddToClassList("header");
-        
+                label.style.flexGrow = 1;
+
                 headerResults.Add(label);
             }
 
             headerResults.style.flexGrow = 1;
         }
 
-        private static Length GetPercentageWidth(int divisor)
+        private static Length GetColumnWidth(int divisor)
         {
             if (divisor <= 0)
             {
                 divisor = 1;
             }
-            return new Length((1f / divisor) * 100f, LengthUnit.Percent);
+
+            // if we are at 100%, then set it to an explicit width value
+            var resultPercent = (1f / divisor) * 100f;
+            
+            return Math.Abs(100f - resultPercent) > 0.01f
+                ? new Length(resultPercent, LengthUnit.Percent)
+                : 100f;
         }
 
         private VisualElement MakeResultItem()
@@ -494,7 +512,7 @@ namespace AssetProcessor_Editor
             var values = element.Q<VisualElement>("Values");
             var objectValue = element.Q<VisualElement>("ObjectName");
             var divisor = _assetProcessorData.propertyFilters.Count;
-            var width = GetPercentageWidth(divisor);
+            var width = GetColumnWidth(divisor);
         
             objectValue.style.width = width;
 
@@ -504,6 +522,7 @@ namespace AssetProcessor_Editor
                 label.style.width = width;
                 label.styleSheets.Add(_styleSheet);
                 label.AddToClassList("result");
+                label.style.flexGrow = 1;
             
                 values.Add(label);
             }
@@ -554,6 +573,64 @@ namespace AssetProcessor_Editor
             
                 writer.Close();
             }
+        }
+        #endregion
+        
+        #region Processors
+
+        private void RefreshProcessors()
+        {
+            var processorList = new List<IAssetProcessor>();
+            
+            var processors = TypeCache.GetTypesDerivedFrom<IAssetProcessor>();
+
+            foreach (var processor in processors)
+            {
+                var processorConstructor = processor.GetConstructors()
+                    .FirstOrDefault(info => info.IsPublic);
+
+                var instantiated = processorConstructor?.Invoke(null);
+
+                if (instantiated != null)
+                {
+                    var getProcessorTypeMethod = processor.GetProperty("ProcessorType")?.GetGetMethod();
+                    var typeProp = getProcessorTypeMethod?.Invoke(instantiated, null);
+
+                    if ((Type)typeProp == _assetProcessorData.assetType)
+                    {
+                        processorList.Add((IAssetProcessor)instantiated);
+                    }   
+                }
+            }
+            
+            // update the UI
+           
+        }
+        
+        private void ProcessorsSelectionChanged(List<object> obj)
+        {
+            _selectedProcessors.Clear();
+            _selectedProcessors.AddRange(obj.Cast<IAssetProcessor>());
+        }
+        
+        private void ProcessResults()
+        {
+            var progressTotal = _selectedProcessors.Count * Selection.objects.Length;
+            var currentProgress = 0f;
+            
+            foreach (var processor in _selectedProcessors)
+            {
+                foreach (var obj in Selection.objects)
+                {
+                    EditorUtility.DisplayProgressBar($"Running processor {processor.Name}...", 
+                        $"Running on object {obj.name}", 
+                        currentProgress / progressTotal);
+                    processor.OnProcess(obj);
+                    currentProgress++;
+                }   
+            }
+            
+            EditorUtility.ClearProgressBar();
         }
         #endregion
     }
