@@ -4,24 +4,32 @@ using UnityEngine;
 
 namespace AssetProcessor_Editor
 {
-    public class ProcessorSample : IAssetProcessor
+    public class ProcessorSample : Processor
     {
-        public Type ProcessorType => typeof(GameObject);
-        public string Name => "Sample GameObject Processor";
-        public string Description => "This will print out a list of all components on any GameObject result.";
-
-        public void OnProcess(object obj)
+        public ProcessorSample()
         {
-            if (obj is GameObject go)
+            processorType = typeof(GameObject);
+            processorName = "Sample GameObject Processor";
+            processorDescription = "This will print out a list of all components on any GameObject result.";
+        }
+
+        public override void OnProcess(object obj)
+        {
+            if (obj is AssetProcessorResult result)
             {
-                var output = new StringBuilder($"The GameObject {go.name} contains the following components:{Environment.NewLine}");
+                var go = result.gameObject as GameObject;
 
-                foreach (var component in go.GetComponents<Component>())
+                if (go != null && result.isChecked)
                 {
-                    output.Append($"{component.name} : {component.GetType().Name}");
-                }
+                    var output = new StringBuilder($"The GameObject {go.name} contains the following components:{Environment.NewLine}");
 
-                Debug.Log(output);
+                    foreach (var component in go.GetComponents<Component>())
+                    {
+                        output.Append($"{component.name} : {component.GetType().Name}");
+                    }
+
+                    Debug.Log(output);   
+                }
             }
         }
     }

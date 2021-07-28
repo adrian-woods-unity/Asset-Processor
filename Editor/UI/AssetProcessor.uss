@@ -50,7 +50,7 @@
 
 .header {
     border-left-width: 2px;
-    border-right-width: 2px;
+    border-right-width: 0px;
     border-top-width: 2px;
     border-bottom-width: 2px;
     border-left-color: rgb(30, 30, 30);
@@ -68,7 +68,7 @@
     border-top-color: rgb(30, 30, 30);
     border-bottom-color: rgb(30, 30, 30);
     border-left-width: 1px;
-    border-right-width: 1px;
+    border-right-width: 0;
     border-top-width: 0;
     border-bottom-width: 1px;
 }

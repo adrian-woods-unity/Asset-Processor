@@ -30,6 +30,7 @@ namespace AssetProcessor_Editor
         public Object gameObject;
         public string displayName;
         public List<string> values = new List<string>();
+        public bool isChecked;
     }
 }
 

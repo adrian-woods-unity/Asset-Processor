@@ -8,7 +8,7 @@
     </ui:VisualElement>
     <ui:VisualElement name="FilterSection" class="section">
         <ui:Label text="Is Filtered By:" />
-        <ui:ListView focusable="True" name="FiltersView" item-height="25" style="flex-grow: 1;" />
+        <ui:ListView focusable="true" name="FiltersView" item-height="25" style="flex-grow: 1;" />
         <ui:VisualElement style="flex-direction: row; justify-content: flex-end;">
             <ui:Button name="OpenFilterButton" tooltip="Load filter" class="button image_button" style="background-image: url(&apos;/Packages/com.unity.asset-processor/Editor/Icons/OpenFile.psd&apos;);" />
             <ui:Button name="SaveFilterButton" tooltip="Save current filter" class="image_button button" style="background-image: url(&apos;/Packages/com.unity.asset-processor/Editor/Icons/SaveFile.psd&apos;);" />
@@ -18,11 +18,12 @@
     <ui:VisualElement name="ResultsSection" class="section" style="max-height: 50%; flex-grow: 1;">
         <ui:Foldout text="Results" value="false" name="ResultsFoldout" style="flex-grow: 1;">
             <ui:VisualElement name="ResultsHeader" style="flex-direction: row; min-height: 25px;">
+                <ui:Toggle tooltip="Toggle all" name="ToggleAll" class="header" style="height: 25px; width: 25px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; justify-content: center;" />
                 <ui:Label text="Object Name" name="ResultsHeaderObject" class="column header" style="height: 25px;" />
                 <ui:VisualElement name="ResultsHeaderValues" style="flex-direction: row; width: 0; height: 25px; flex-shrink: 0;" />
                 <ui:VisualElement style="flex-direction: row; width: 13px;" />
             </ui:VisualElement>
-            <ui:ListView focusable="True" name="ResultsView" item-height="25" style="flex-grow: 1;" />
+            <ui:ListView focusable="true" name="ResultsView" item-height="25" style="flex-grow: 1;" />
             <ui:VisualElement name="ExportCsvButton" style="flex-direction: row; justify-content: flex-end; min-height: 35px;">
                 <ui:Button text="Export CSV" name="ExportCsvButton" style="width: 150px; margin-left: 5px; margin-right: 10px; margin-top: 5px; margin-bottom: 10px;" />
             </ui:VisualElement>
@@ -30,7 +31,7 @@
     </ui:VisualElement>
     <ui:VisualElement name="ProcessorSection" class="section">
         <ui:Foldout text="Process" value="false">
-            <ui:ListView focusable="True" name="ProcessorList" />
+            <ui:ListView focusable="true" name="ProcessorList" />
         </ui:Foldout>
         <ui:VisualElement style="flex-direction: row; flex-grow: 1; justify-content: flex-end;">
             <ui:Button text="Process" tooltip="Process selected results with selected processors" name="ProcessButton" />

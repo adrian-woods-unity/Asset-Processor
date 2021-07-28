@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:VisualElement style="height: 25px; flex-direction: row; flex-grow: 0;">
+        <ui:Toggle tooltip="Process this entry" name="ProcessToggle" binding-path="isChecked" class="result" style="height: 25px; width: 25px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; justify-content: center; padding-left: 5px;" />
         <ui:Label binding-path="displayName" name="ObjectName" class="label column result" />
         <ui:VisualElement name="Values" class="column" style="flex-direction: row; flex-grow: 1;" />
     </ui:VisualElement>

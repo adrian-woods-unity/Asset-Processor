@@ -25,8 +25,9 @@ namespace AssetProcessor_Editor
         private ListView _resultsView;
         private ListView _processorView;
         private Foldout _resultsSection;
+        private Toggle _checkAll;
 
-        private readonly List<IAssetProcessor> _selectedProcessors = new List<IAssetProcessor>();
+        private readonly List<Processor> _processors = new List<Processor>();
 
         [MenuItem("Tools/AssetProcessor")]
         public static void OpenAssetProcessor()
@@ -61,8 +62,6 @@ namespace AssetProcessor_Editor
             _resultsView.onSelectionChanged += OnResultSelected;
 
             _processorView = rootVisualElement.Q<ListView>("ProcessorList");
-            _processorView.selectionType = SelectionType.Multiple;
-            _processorView.onSelectionChanged += ProcessorsSelectionChanged;
 
             var processButton = rootVisualElement.Q<Button>("ProcessButton");
             processButton.clickable.clicked += ProcessResults;
@@ -83,6 +82,9 @@ namespace AssetProcessor_Editor
 
             var exportResultsButton = rootVisualElement.Q<Button>("ExportCsvButton");
             exportResultsButton.clickable.clicked += ExportResults;
+
+            var checkAllToggle = rootVisualElement.Q<Toggle>("ToggleAll");
+            checkAllToggle.RegisterValueChangedCallback(ToggleAll);
 
             PopulateAssetProcessorData(_assetProcessorData.regionType);
         }
@@ -527,6 +529,14 @@ namespace AssetProcessor_Editor
                 values.Add(label);
             }
         }
+        
+        private void ToggleAll(ChangeEvent<bool> evt)
+        {
+            foreach (var t in _assetProcessorData.results)
+            {
+                t.isChecked = evt.newValue;
+            }
+        }
 
         private void OnResultSelected(List<object> objects)
         {
@@ -580,51 +590,71 @@ namespace AssetProcessor_Editor
 
         private void RefreshProcessors()
         {
-            var processorList = new List<IAssetProcessor>();
-            
-            var processors = TypeCache.GetTypesDerivedFrom<IAssetProcessor>();
+            _processors.Clear();
+            var processors = TypeCache.GetTypesDerivedFrom<Processor>();
 
             foreach (var processor in processors)
             {
-                var processorConstructor = processor.GetConstructors()
-                    .FirstOrDefault(info => info.IsPublic);
-
-                var instantiated = processorConstructor?.Invoke(null);
-
-                if (instantiated != null)
+                if (CreateInstance(processor) is Processor instantiated)
                 {
-                    var getProcessorTypeMethod = processor.GetProperty("ProcessorType")?.GetGetMethod();
-                    var typeProp = getProcessorTypeMethod?.Invoke(instantiated, null);
-
-                    if ((Type)typeProp == _assetProcessorData.assetType)
+                    if (instantiated.processorType == _assetProcessorData.assetType)
                     {
-                        processorList.Add((IAssetProcessor)instantiated);
+                        _processors.Add(instantiated);
                     }   
                 }
             }
             
             // update the UI
-           
+            UpdateProcessorUI();
         }
-        
-        private void ProcessorsSelectionChanged(List<object> obj)
+
+        private void UpdateProcessorUI()
         {
-            _selectedProcessors.Clear();
-            _selectedProcessors.AddRange(obj.Cast<IAssetProcessor>());
+            _processorView.Clear();
+            _processorView.itemsSource = _processors;
+            _processorView.makeItem = MakeProcessorItem;
+            _processorView.bindItem = BindProcessorItem;
+            _processorView.visible = true;
+            _processorView.contentContainer.style.flexGrow = 1;
+            _processorView.style.height = _processors.Count * _processorView.itemHeight;
+            _processorView.Refresh();
+        }
+
+        private VisualElement MakeProcessorItem()
+        {
+            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{BasePath}AssetProcessorProcessor.uxml");
+
+            var item = visualTree.CloneTree();
+            item.styleSheets.Add(_styleSheet);
+
+            return item;
         }
         
+        private void BindProcessorItem(VisualElement element, int i)
+        {
+            element.Bind(new SerializedObject(_processors[i]));
+        
+            // generate the column results
+            var processorName = element.Q<Label>("ProcessorName");
+            var description = element.Q<Label>("ProcessorDescription");
+            
+            processorName.style.width = new Length(49f, LengthUnit.Percent);
+            description.style.width = new Length(49f, LengthUnit.Percent);
+        }
+
         private void ProcessResults()
         {
-            var progressTotal = _selectedProcessors.Count * Selection.objects.Length;
+            var progressTotal = _processors.Count * Selection.objects.Length;
             var currentProgress = 0f;
             
-            foreach (var processor in _selectedProcessors)
+            foreach (var processor in _processors.Where(proc => proc.isEnabled))
             {
-                foreach (var obj in Selection.objects)
+                foreach (var obj in _assetProcessorData.results)
                 {
-                    EditorUtility.DisplayProgressBar($"Running processor {processor.Name}...", 
+                    EditorUtility.DisplayProgressBar($"Running processor {processor.processorName}...", 
                         $"Running on object {obj.name}", 
                         currentProgress / progressTotal);
+                    
                     processor.OnProcess(obj);
                     currentProgress++;
                 }   
