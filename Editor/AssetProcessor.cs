@@ -286,7 +286,6 @@ namespace AssetProcessor_Editor
             _filtersView.itemsSource = _assetProcessorData.propertyFilters;
             _filtersView.selectionType = SelectionType.None;
             _filtersView.visible = true;
-            _filtersView.contentContainer.style.flexGrow = 1;
             _filtersView.style.height = _assetProcessorData.propertyFilters.Count * _filtersView.itemHeight;
             _filtersView.Refresh();
         }

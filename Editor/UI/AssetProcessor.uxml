@@ -1,10 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:VisualElement name="InSection" class="section">
-        <ui:Label text="In:" />
-        <uie:EnumField binding-path="regionType" name="Region" type="AssetProcessor_Editor.RegionTypes,AssetProcessor" class="enum_field" />
+    <ui:VisualElement name="Header">
+        <ui:Label text="Asset Processor" style="font-size: 24px;" />
     </ui:VisualElement>
-    <ui:VisualElement name="ForEachSection" class="section">
-        <ui:Label text="For Each:" />
+    <ui:VisualElement style="flex-direction: row;">
+        <ui:VisualElement name="InSection" class="section" style="flex-direction: row;">
+            <ui:Label text="In:" />
+            <uie:EnumField binding-path="regionType" name="Region" type="AssetProcessor_Editor.RegionTypes,AssetProcessor" class="enum_field" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ForEachSection" class="section" style="flex-direction: row;">
+            <ui:Label text="For Each:" />
+        </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="FilterSection" class="section">
         <ui:Label text="Is Filtered By:" />
@@ -23,8 +28,8 @@
                 <ui:VisualElement name="ResultsHeaderValues" style="flex-direction: row; width: 0; height: 25px; flex-shrink: 0;" />
                 <ui:VisualElement style="flex-direction: row; width: 13px;" />
             </ui:VisualElement>
-            <ui:ListView focusable="true" name="ResultsView" item-height="25" style="flex-grow: 1;" />
-            <ui:VisualElement name="ExportCsvButton" style="flex-direction: row; justify-content: flex-end; min-height: 35px;">
+            <ui:ListView focusable="true" name="ResultsView" item-height="25" style="flex-direction: row; justify-content: center;" />
+            <ui:VisualElement name="ExportCsvButton" style="flex-direction: row; min-height: 35px;">
                 <ui:Button text="Export CSV" name="ExportCsvButton" style="width: 150px; margin-left: 5px; margin-right: 10px; margin-top: 5px; margin-bottom: 10px;" />
             </ui:VisualElement>
         </ui:Foldout>
