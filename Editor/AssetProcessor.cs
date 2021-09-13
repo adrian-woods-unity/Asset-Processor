@@ -344,7 +344,7 @@ namespace AssetProcessor_Editor
                 case RegionTypes.AssetDatabase:
                     _assetProcessorData.results.AddRange(FilterByAsset());
                     break;
-                case RegionTypes.Scene:
+                case RegionTypes.SceneOrPrefab:
                     _assetProcessorData.results.AddRange(FilterByObject());
                     break;
             }

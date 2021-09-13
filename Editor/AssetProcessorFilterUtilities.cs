@@ -174,6 +174,7 @@ namespace AssetProcessor_Editor
             var result = ScriptableObject.CreateInstance<AssetProcessorResult>();
             result.displayName = obj.name;
             result.gameObject = obj;
+            result.isChecked = true;
 
             return result;
         }

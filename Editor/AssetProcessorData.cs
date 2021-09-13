@@ -8,7 +8,7 @@ namespace AssetProcessor_Editor
     public enum RegionTypes
     {
         AssetDatabase,
-        Scene,
+        SceneOrPrefab,
     }
     
     public enum AndOr
